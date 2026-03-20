@@ -38,7 +38,7 @@ const mockEvents = [
   { _id:"evt_010", source:"syslog", type:"Privilege Escalation", severity:"high", description:"User escalated to root via sudo with suspicious command execution", ip:"192.168.1.25", tags:["privesc","sudo","linux"], details:{user:"jdoe",command:"sudo bash -c 'cat /etc/shadow'",tty:"pts/2"}, createdAt:new Date(Date.now()-450000).toISOString() },
 ];
 
-let liveEvents = [...mockEvents];
+let liveEvents = []; // Fully dependent on backend now
 
 // ───────── State ─────────
 let currentPage = "login"; // login | dashboard | events
@@ -171,18 +171,8 @@ function bindLogin() {
       await fetchEventsFromAPI();
       render();
     } catch(err) {
-      errDiv.querySelector("span").textContent = err.message;
+      errDiv.querySelector("span").textContent = err.message || "Authentication failed. Please check your connection to the backend.";
       errDiv.style.display = "flex";
-      // For demo: allow bypass
-      if(err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
-        currentUser = {username, role:"analyst"};
-        jwtToken = "demo-token";
-        localStorage.setItem("siem_token", jwtToken);
-        localStorage.setItem("siem_user", JSON.stringify(currentUser));
-        currentPage = "dashboard";
-        liveEvents = [...mockEvents];
-        render();
-      }
     } finally {
       loginBtn.disabled = false;
       loginBtn.textContent = isRegisterMode ? "Create Account" : "Access System";
